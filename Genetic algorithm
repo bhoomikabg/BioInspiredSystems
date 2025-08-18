@@ -1,0 +1,46 @@
+# Fitness function (maximize x^2)
+def fitness(chrom):
+    return int(chrom, 2) ** 2
+
+# Single-point crossover
+def crossover(p1, p2, point):
+    return p1[:point] + p2[point:], p2[:point] + p1[point:]
+
+# Mask-based mutation
+def mutate(chrom, mask):
+    return ''.join('1' if (m=='1' and c=='0') else 
+                   '0' if (m=='1' and c=='1') else c 
+                   for c,m in zip(chrom, mask))
+
+# --- User Input ---
+n = int(input("Enter number of chromosomes: "))
+population = [input(f"Enter chromosome {i+1} (5-bit): ") for i in range(n)]
+mutation_masks = [input(f"Enter mutation mask {i+1} (5-bit): ") for i in range(n)]
+crossover_points = [int(x) for x in input("Enter crossover points (space separated): ").split()]
+generations = int(input("Enter number of generations: "))
+
+# --- Evolution Loop ---
+for g in range(generations):
+    print(f"\n=== Generation {g+1} ===")
+    print("Population:", population)
+
+    # Crossover (pairwise)
+    children = []
+    for i in range(0, n, 2):
+        p1, p2 = population[i], population[i+1]
+        point = crossover_points[(i//2) % len(crossover_points)]
+        c1, c2 = crossover(p1, p2, point)
+        children.extend([c1, c2])
+    print("After Crossover:", children)
+
+    # Mutation
+    population = [mutate(ch, mask) for ch, mask in zip(children, mutation_masks)]
+    print("After Mutation:", population)
+
+    # Fitness display
+    for ch in population:
+        print(f"{ch} | {int(ch,2)} | f(x)={fitness(ch)}")
+
+# --- Best solution ---
+best = max(population, key=fitness)
+print("\nBest Chromosome:", best, "| Decimal:", int(best,2), "| Fitness:", fitness(best))
